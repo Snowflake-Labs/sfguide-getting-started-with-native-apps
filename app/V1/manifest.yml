@@ -1,0 +1,31 @@
+#version identifier
+manifest_version: 1
+
+version:
+  name: V1
+  label: Version One
+  comment: The first version of the application
+
+#artifacts that are distributed from this version of the package
+artifacts:
+  setup_script: scripts/setup.sql
+  default_streamlit: app_instance_schema.streamlit
+  extension_code: true
+
+#runtime configuration for this version
+configuration:
+  log_level: debug
+  trace_level: off
+
+# references: # optional
+#   - enrichment_table:
+#       label: "Enrich Orders" # required subfield
+#       # description is a required subfield
+#       description: "Select orders table"
+#       privileges: # required subfield, must be length >= 1
+#         - SELECT
+#         - INSERT
+#         - UPDATE
+#       object_type: Table # required subfield
+#       multi_valued: true # optional (default: false)
+#       register_callback: config.register_reference # required
