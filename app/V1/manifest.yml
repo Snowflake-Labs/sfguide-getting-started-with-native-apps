@@ -17,15 +17,20 @@ configuration:
   log_level: debug
   trace_level: off
 
-# references: # optional
-#   - enrichment_table:
-#       label: "Enrich Orders" # required subfield
-#       # description is a required subfield
-#       description: "Select orders table"
-#       privileges: # required subfield, must be length >= 1
-#         - SELECT
-#         - INSERT
-#         - UPDATE
-#       object_type: Table # required subfield
-#       multi_valued: true # optional (default: false)
-#       register_callback: config.register_reference # required
+references:
+  - order_table:
+      label: "Orders Table" 
+      description: "Select table"
+      privileges:
+        - SELECT
+      object_type: Table 
+      multi_valued: false 
+      register_callback: app_instance_schema.update_reference 
+  - site_recovery_table:
+      label: "Site Recovery Table" 
+      description: "Select table"
+      privileges:
+        - SELECT
+      object_type: Table 
+      multi_valued: false 
+      register_callback: app_instance_schema.update_reference

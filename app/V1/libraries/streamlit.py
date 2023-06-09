@@ -4,16 +4,10 @@ import altair as alt
 from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import count_distinct,col,sum
 import snowflake.permissions as permission
+from sys import exit
 
 st.set_page_config(layout="wide")
-st.title("Where Are My Ski Goggles?")
 session = get_active_session()
-
-# def configure_reference_button_click():
-#     permission.request_reference("enrichment_table")
-
-# st.button("Request Reference", on_click=permission.request_reference, args=['enrichment_table'], key="single-valued")
-# st.button("Request Reference", on_click=configure_reference_button_click)
 
 def load_app(orders_table,site_recovery_table):
     with st.spinner("Loading lead time, order status, and supplier performance. Please wait..."):
@@ -21,7 +15,7 @@ def load_app(orders_table,site_recovery_table):
         session.call("billing_event",df.count())
         df_order_status = df.group_by('status').agg(count_distinct('order_id').as_('TOTAL RECORDS')).order_by('status').to_pandas()
 
-        df_cal_lead_time = session.sql(f"SELECT t1.order_id,t2.ship_order_id,t1.material_name,t1.supplier_name,t1.quantity,t1.cost,t2.status,t2.lat,t2.lon,cal_lead_time(t1.process_supply_day,t2.duration,t2.recovery_days) as lead_time FROM {orders_table} as t1 INNER JOIN (SELECT order_id, ship_order_id, status, duration, MFG_SHIPPING.lat, MFG_SHIPPING.lon, IFF({site_recovery_table}.recovery_weeks * 7::int = {site_recovery_table}.recovery_weeks * 7,{site_recovery_table}.recovery_weeks * 7,0) as recovery_days from MFG_SHIPPING LEFT OUTER JOIN {site_recovery_table} ON MFG_SHIPPING.lon = {site_recovery_table}.lon AND MFG_SHIPPING.lat = {site_recovery_table}.lat) as t2 ON t2.ORDER_ID = t1.ORDER_ID ORDER BY t1.order_id")
+        df_cal_lead_time = session.sql(f"SELECT t1.order_id,t2.ship_order_id,t1.material_name,t1.supplier_name,t1.quantity,t1.cost,t2.status,t2.lat,t2.lon,cal_lead_time(t1.process_supply_day,t2.duration,t2.recovery_days) as lead_time FROM {orders_table} as t1 INNER JOIN (SELECT order_id, ship_order_id, status, duration, MFG_SHIPPING.lat, MFG_SHIPPING.lon, IFF(srt.recovery_weeks * 7::int = srt.recovery_weeks * 7,srt.recovery_weeks * 7,0) as recovery_days from MFG_SHIPPING LEFT OUTER JOIN {site_recovery_table} as srt ON MFG_SHIPPING.lon = srt.lon AND MFG_SHIPPING.lat = srt.lat) as t2 ON t2.ORDER_ID = t1.ORDER_ID ORDER BY t1.order_id")
         df_supplier_perf = df_cal_lead_time.group_by('supplier_name').agg(sum(col('lead_time')).as_('TOTAL LEAD TIME')).sort('TOTAL LEAD TIME', ascending=True).limit(20).to_pandas()
         df_lead_time = df_cal_lead_time.select('order_id','lead_time').sort('order_id', ascending=True).to_pandas()
         
@@ -81,34 +75,17 @@ def load_app(orders_table,site_recovery_table):
                 # st.subheader("Underlying Data")
                 # st.dataframe(df_order_status)
 
-if ('merge' in st.session_state and st.session_state.merge):
-    src_db = st.session_state.src_db
-    src_schema = st.session_state.src_schema
-    src_orders_table = st.session_state.src_orders_table
-    src_site_recovery_table = st.session_state.src_site_recovery_table
-    orders_table = f"{src_db}.{src_schema}.{src_orders_table}"
-    site_recovery_table = f"{src_db}.{src_schema}.{src_site_recovery_table}"
-    load_app(orders_table,site_recovery_table)
-else:
-    with st.expander("Select Orders and Site Recovery Datasets"):
-        src_db = st.text_input('Database',value='DASH_DB')
-        src_schema = st.text_input('Schema',value='DASH_SCHEMA')
-        src_orders_table = st.text_input('Orders Table',value='MFG_ORDERS')
-        src_site_recovery_table = st.text_input('Site Recovery Table',value='MFG_SITE_RECOVERY')
-        orders_table = ""
-        site_recovery_table = ""
-        if st.button("Merge Orders with Shipping Data"):
-          try:
-            st.session_state.merge = 'merge'
-            st.session_state.src_db = src_db
-            st.session_state.src_schema = src_schema
-            st.session_state.src_orders_table = src_orders_table
-            st.session_state.src_site_recovery_table = src_site_recovery_table
-            orders_table = f"{src_db}.{src_schema}.{src_orders_table}"
-            site_recovery_table = f"{src_db}.{src_schema}.{src_site_recovery_table}"
-          except Exception as e:
-            st.write(f"Source datasets in {src_db}.{src_schema} not found. Cannot proceed!")
-            st.write(e)
-    
-    if len(orders_table) > 0:
-        load_app(orders_table,site_recovery_table)
+orders_reference_associations = permission.get_reference_associations("order_table")
+if len(orders_reference_associations) == 0:
+    permission.request_reference("order_table")
+    exit(0)
+
+site_recovery_reference_associations = permission.get_reference_associations("site_recovery_table")
+if len(site_recovery_reference_associations) == 0:
+    permission.request_reference("site_recovery_table")
+    exit(0)
+
+st.title("Where Are My Ski Goggles?")
+orders_table = "reference('order_table')"
+site_recovery_table = "reference('site_recovery_table')"
+load_app(orders_table,site_recovery_table)

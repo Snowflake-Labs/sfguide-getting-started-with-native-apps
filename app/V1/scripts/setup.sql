@@ -40,6 +40,24 @@ imports = ('/libraries/procs.py')
 handler = 'procs.billing_event'
 ;
 
+create or replace procedure app_instance_schema.update_reference(ref_name string, operation string, ref_or_alias string)
+returns string
+as $$
+begin
+  case (operation)
+    when 'ADD' then
+       select system$set_reference(:ref_name, :ref_or_alias);
+    when 'REMOVE' then
+       select system$remove_reference(:ref_name, :ref_or_alias);
+    when 'CLEAR' then
+       select system$remove_all_references();
+    else
+       return 'Unknown operation: ' || operation;
+  end case;
+  return 'Success';
+end;
+$$;
+
 -- Grant usage and permissions on objects
 grant usage on schema app_instance_schema to application role app_instance_role;
 grant usage on function app_instance_schema.cal_lead_time(int,int,int) to application role app_instance_role;
@@ -47,3 +65,4 @@ grant usage on procedure app_instance_schema.billing_event(int) to application r
 grant usage on function app_instance_schema.cal_distance(float,float,float,float) to application role app_instance_role;
 grant SELECT on view app_instance_schema.MFG_SHIPPING to application role app_instance_role;
 grant usage on streamlit app_instance_schema.streamlit to application role app_instance_role;
+grant usage on procedure app_instance_schema.update_reference(string, string, string) to application role app_instance_role;
