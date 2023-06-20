@@ -14,7 +14,7 @@ CREATE OR REPLACE TABLE MFG_ORDERS (
   process_supply_day NUMBER(38,0)
 );
 
--- Load orders_data.csv using Snowsight
+-- Load app/data/orders_data.csv using Snowsight
 
 CREATE OR REPLACE TABLE MFG_SHIPPING (
   order_id NUMBER(38,0), 
@@ -25,7 +25,7 @@ CREATE OR REPLACE TABLE MFG_SHIPPING (
   duration NUMBER(38,0)
 );
 
--- Load shipping_data.csv using Snowsight
+-- Load app/data/shipping_data.csv using Snowsight
 
 CREATE OR REPLACE TABLE MFG_SITE_RECOVERY (
   event_id NUMBER(38,0), 
@@ -34,7 +34,7 @@ CREATE OR REPLACE TABLE MFG_SITE_RECOVERY (
   lon FLOAT
 );
 
--- Load site_recovery_data.csv using Snowsight
+-- Load app/data/site_recovery_data.csv using Snowsight
 
 ################################################################
 Create SHARED_CONTENT_SCHEMA to share in the application package
@@ -56,14 +56,8 @@ grant select on view MFG_SHIPPING to share in application package <APPLICATION_P
 USE DATABASE <YOUR_DB>;
 USE SCHEMA <YOUR_SCHEMA>;
 
--- This executes"setup.sql" from the manifest.yml; This is also what gets executed when installing the app
-CREATE APPLICATION <APPLICATION_NAME> FROM application package <APPLICATION_PKG_NAME> using <YOUR_CODE_FILES_STAGE_NAME/folder>;
-
-USE DATABASE <YOUR_DB>;
-USE SCHEMA <YOUR_SCHEMA>;
-GRANT USAGE on database DASH_DB to application <APPLICATION_NAME>;
-GRANT USAGE on schema DASH_SCHEMA to application <APPLICATION_NAME>;
-GRANT SELECT on MFG_ORDERS to application <APPLICATION_NAME>;
-GRANT SELECT on MFG_SITE_RECOVERY to application <APPLICATION_NAME>;
+-- This executes "setup.sql" linked in the manifest.yml; This is also what gets executed when installing the app
+CREATE APPLICATION <APPLICATION_NAME> FROM application package <APPLICATION_PKG_NAME> using version <VERION> patch <PATCH>;
+-- For example, CREATE APPLICATION LEAD_TIME_OPTIMIZER_APP FROM application package LEAD_TIME_OPTIMIZER_PKG using version V1 patch 0;
 
 -- At this point you should see and run the app <APPLICATION_NAME> listed under Apps

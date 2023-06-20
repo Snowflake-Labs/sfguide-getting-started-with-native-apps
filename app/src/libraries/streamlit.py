@@ -12,7 +12,6 @@ session = get_active_session()
 def load_app(orders_table,site_recovery_table):
     with st.spinner("Loading lead time, order status, and supplier performance. Please wait..."):
         df = session.sql(f"SELECT t1.order_id,t2.ship_order_id,t1.material_name,t1.supplier_name, t1.quantity, t1.cost, t2.status, t2.lat, t2.lon FROM {orders_table} as t1 INNER JOIN MFG_SHIPPING as t2 ON t2.ORDER_ID = t1.ORDER_ID ORDER BY t1.order_id")
-        session.call("billing_event",df.count())
         df_order_status = df.group_by('status').agg(count_distinct('order_id').as_('TOTAL RECORDS')).order_by('status').to_pandas()
 
         df_cal_lead_time = session.sql(f"SELECT t1.order_id,t2.ship_order_id,t1.material_name,t1.supplier_name,t1.quantity,t1.cost,t2.status,t2.lat,t2.lon,cal_lead_time(t1.process_supply_day,t2.duration,t2.recovery_days) as lead_time FROM {orders_table} as t1 INNER JOIN (SELECT order_id, ship_order_id, status, duration, MFG_SHIPPING.lat, MFG_SHIPPING.lon, IFF(srt.recovery_weeks * 7::int = srt.recovery_weeks * 7,srt.recovery_weeks * 7,0) as recovery_days from MFG_SHIPPING LEFT OUTER JOIN {site_recovery_table} as srt ON MFG_SHIPPING.lon = srt.lon AND MFG_SHIPPING.lat = srt.lat) as t2 ON t2.ORDER_ID = t1.ORDER_ID ORDER BY t1.order_id")

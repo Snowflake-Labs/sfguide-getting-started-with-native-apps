@@ -1,6 +1,6 @@
--- =================
+-- ==========================================
 -- This script runs when the app is installed 
--- =================
+-- ==========================================
 
 -- Create Application Role and Schema
 create application role if not exists app_instance_role;
@@ -42,6 +42,7 @@ handler = 'procs.billing_event'
 
 create or replace procedure app_instance_schema.update_reference(ref_name string, operation string, ref_or_alias string)
 returns string
+language sql
 as $$
 begin
   case (operation)
