@@ -19,16 +19,15 @@ language python
 runtime_version = '3.8'
 packages = ('snowflake-snowpark-python')
 imports = ('/libraries/udf.py')
-handler = 'udf.cal_lead_time'
+handler = 'udf.cal_lead_time';
 
-;create or replace function app_instance_schema.cal_distance(slat float,slon float,elat float,elon float)
+create or replace function app_instance_schema.cal_distance(slat float,slon float,elat float,elon float)
 returns float
 language python
 runtime_version = '3.8'
 packages = ('snowflake-snowpark-python','pandas','scikit-learn==1.1.1')
 imports = ('/libraries/udf.py')
-handler = 'udf.cal_distance'
-;
+handler = 'udf.cal_distance';
 
 -- Create Stored Procedure
 create or replace procedure app_instance_schema.billing_event(number_of_rows int)
@@ -37,8 +36,7 @@ language python
 runtime_version = '3.8'
 packages = ('snowflake-snowpark-python')
 imports = ('/libraries/procs.py')
-handler = 'procs.billing_event'
-;
+handler = 'procs.billing_event';
 
 create or replace procedure app_instance_schema.update_reference(ref_name string, operation string, ref_or_alias string)
 returns string
