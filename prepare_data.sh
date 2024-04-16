@@ -17,7 +17,7 @@ CREATE OR REPLACE TABLE MFG_SHIPPING (
   duration NUMBER(38,0)
 );"
 
-# create provider orders data table
+# create consumer orders data table
 snow sql -q "USE WAREHOUSE NATIVE_APP_QUICKSTART_WH;
 -- this database is used to store our data
 USE DATABASE NATIVE_APP_QUICKSTART_DB;
@@ -33,7 +33,7 @@ CREATE OR REPLACE TABLE MFG_ORDERS (
   process_supply_day NUMBER(38,0)
 );
 
--- create provider recovery data table
+-- create consumer recovery data table
 CREATE OR REPLACE TABLE MFG_SITE_RECOVERY (
   event_id NUMBER(38,0), 
   recovery_weeks NUMBER(38,0),
