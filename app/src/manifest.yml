@@ -8,7 +8,7 @@ version:
 
 #artifacts that are distributed from this version of the package
 artifacts:
-  setup_script: setup.sql
+  setup_script: scripts/setup.sql
   default_streamlit: app_instance_schema.streamlit
   extension_code: true
 
