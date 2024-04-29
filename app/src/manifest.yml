@@ -15,20 +15,21 @@ artifacts:
 #runtime configuration for this version
 configuration:
   log_level: debug
-  trace_level: off
+  trace_level: always
+
 
 references:
   - order_table:
-      label: "Orders Table" 
-      description: "Select table"
+      label: "information_schema" 
+      description: "Give the access to the information_schema.column table"
       privileges:
         - SELECT
       object_type: Table 
       multi_valued: false 
       register_callback: app_instance_schema.update_reference 
   - site_recovery_table:
-      label: "Site Recovery Table" 
-      description: "Select table"
+      label: "Prod_Table" 
+      description: "Provide access to the prod table"
       privileges:
         - SELECT
       object_type: Table 
