@@ -1,3 +1,9 @@
+# This will:
+# - Stop script upon encountering an error (-e)
+# - Error out on unknown variables
+# - Fail if a command in a pipeline fails
+set -euo pipefail
+
 snow sql -q "CREATE OR REPLACE WAREHOUSE NATIVE_APP_QUICKSTART_WH WAREHOUSE_SIZE=SMALL INITIALLY_SUSPENDED=TRUE;
 
 -- this database is used to store our data
@@ -42,13 +48,13 @@ CREATE OR REPLACE TABLE MFG_SITE_RECOVERY (
 );
 "
 # loading shipping data into table stage
-snow object stage copy ./app/data/shipping_data.csv @%MFG_SHIPPING --database NATIVE_APP_QUICKSTART_DB --schema NATIVE_APP_QUICKSTART_SCHEMA
+snow stage copy ./app/data/shipping_data.csv @%MFG_SHIPPING --database NATIVE_APP_QUICKSTART_DB --schema NATIVE_APP_QUICKSTART_SCHEMA
 
 # loading orders data into table stage
-snow object stage copy ./app/data/order_data.csv @%MFG_ORDERS --database NATIVE_APP_QUICKSTART_DB --schema NATIVE_APP_QUICKSTART_SCHEMA
+snow stage copy ./app/data/order_data.csv @%MFG_ORDERS --database NATIVE_APP_QUICKSTART_DB --schema NATIVE_APP_QUICKSTART_SCHEMA
 
 # loading site recovery data into table stage
-snow object stage copy ./app/data/site_recovery_data.csv @%MFG_SITE_RECOVERY --database NATIVE_APP_QUICKSTART_DB --schema NATIVE_APP_QUICKSTART_SCHEMA
+snow stage copy ./app/data/site_recovery_data.csv @%MFG_SITE_RECOVERY --database NATIVE_APP_QUICKSTART_DB --schema NATIVE_APP_QUICKSTART_SCHEMA
 
 #load data from table stages into tables
 snow sql -q"USE WAREHOUSE NATIVE_APP_QUICKSTART_WH;
